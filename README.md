@@ -1,6 +1,8 @@
-## Below is a direct translation of the Wan2.1 readme.md by Spawner1145. 
-## All credits go to him and his outstanding work.
+# Below is a direct translation of the Wan2.1 README.md by Spawner1145. 
+#           All credits go to him and his outstanding work.
+
 -----------------------------------------------------------
+
 # sd-webui-wanvideo
 
 I'm too new to understand kj nodes, so I just use diffusers (
