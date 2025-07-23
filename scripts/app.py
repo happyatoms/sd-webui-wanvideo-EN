@@ -7,19 +7,19 @@ from backend_wanvideo.ui import *
 from backend_wanvideo.api import Api
 import uvicorn
 
-# 设置日志
+# Setting up logging
 logging.basicConfig(level=logging.INFO)
 try:
     from scripts.gradio_patch import money_patch_gradio
     if money_patch_gradio():
-        logging.info("成功应用gradio补丁")
+        logging.info("gradio patch applied successfully")
     else:
-        logging.warning("gradio补丁导入失败")
+        logging.warning("gradio patch import failed")
 except Exception as e:
-    #logging.error(f"Gradio补丁加载失败: {e}")
+    #logging.error(f"Gradio patch loading failed: {e}")
     pass
 
-# 检查是否在 WebUI 环境中运行
+# Check if it is running in the WebUI environment
 try:
     from modules import script_callbacks, shared
     IN_WEBUI = True
@@ -27,39 +27,39 @@ except ImportError:
     IN_WEBUI = False
     shared = type('Shared', (), {'opts': type('Opts', (), {'outdir_samples': '', 'outdir_txt2img_samples': ''})})()
 
-# 硬编码配置
+# Hard-coded configuration
 HOST = "127.0.0.1"
-PORT_API = 7870     # 独立的 FastAPI 端口
-NPROC_PER_NODE = 1  # 默认 USP 进程数
+PORT_API = 7870 # Dedicated FastAPI port
+NPROC_PER_NODE = 1 # Default number of USP processes
 
 if IN_WEBUI:
-    # WebUI 环境下，注册 UI 和 API 回调
+    # In WebUI environment, register UI and API callbacks
     from backend_wanvideo.api import on_app_started
     script_callbacks.on_ui_tabs(lambda: [(create_wan_video_tab(), "Wan Video", "wan_video_tab")])
     script_callbacks.on_app_started(on_app_started)
 else:
-    # 非 WebUI 环境下，分别启动 Gradio UI 和 FastAPI
+    # In a non-WebUI environment, start Gradio UI and FastAPI separately
     if __name__ == "__main__":
-        # 创建 Gradio 界面
+        # Create the Gradio interface
         interface = create_wan_video_tab()
-        logging.info("Gradio 界面已创建")
+        logging.info("Gradio interface created")
 
-        # 创建独立的 FastAPI 实例
+        # Create a standalone FastAPI instance
         app = FastAPI(docs_url="/docs", openapi_url="/openapi.json")
-        queue_lock = Lock()  # 为非 WebUI 环境提供线程锁
+        queue_lock = Lock() # Provide thread lock for non-WebUI environment
         api = Api(app, queue_lock, prefix="/wanvideo/v1")
-        logging.info("API 路由已挂载到独立的 FastAPI 实例")
+        logging.info("API routing has been mounted to a separate FastAPI instance")
 
-        # 打印 USP 和 API 文档提示
+        # Print USP and API documentation tips
         if NPROC_PER_NODE > 1:
-            print("提示：已启用 USP，需使用以下命令运行：")
+            print("Tip: USP has been enabled, you need to run it with the following command:")
             print(f"torchrun --standalone --nproc_per_node={NPROC_PER_NODE} generation.py")
         else:
-            print("提示：若需启用 USP，需使用以下命令运行（修改 NPROC_PER_NODE）：")
-            print("torchrun --standalone --nproc_per_node=<进程数> generation.py")
-        print(f"API 文档可用：http://{HOST}:{PORT_API}/docs")
+            print("Tip: To enable USP, run the following command (modify NPROC_PER_NODE):")
+            print("torchrun --standalone --nproc_per_node=<number of processes> generation.py")
+        print(f"API documentation is available at: http://{HOST}:{PORT_API}/docs")
 
-        # 在单独线程中启动 Gradio
+        # Start Gradio in a separate thread
         def run_gradio():
             try:
                 interface.launch(
@@ -69,12 +69,12 @@ else:
                     share=True
                 )
             except Exception as e:
-                logging.error(f"Gradio 启动失败: {str(e)}")
+                logging.error(f"Gradio startup failed: {str(e)}")
 
         gradio_thread = threading.Thread(target=run_gradio)
         gradio_thread.start()
 
-        # 启动独立的 FastAPI 服务器
+        # Start a standalone FastAPI server
         try:
             uvicorn.run(
                 app,
@@ -83,7 +83,7 @@ else:
                 log_level="info"
             )
         except Exception as e:
-            logging.error(f"FastAPI 启动失败: {str(e)}")
+            logging.error(f"FastAPI startup failed: {str(e)}")
         finally:
             interface.close()
             gradio_thread.join()

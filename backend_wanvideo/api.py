@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from PIL import Image
 import tempfile
 
-# 导入 WebUI 相关模块，添加 try-except 以兼容非 WebUI 环境
+# Import WebUI related modules and add try-except to be compatible with non-WebUI environments
 try:
     from modules import shared
     from modules.call_queue import queue_lock as webui_queue_lock
@@ -23,124 +23,124 @@ except ImportError:
 
 from backend_wanvideo.inferrence import generate_t2v, generate_i2v, generate_v2v, get_model_files
 
-# Pydantic 模型定义请求和响应格式，添加 Field 描述
+# Pydantic model defines request and response formats and adds Field descriptions
 class Text2VideoRequest(BaseModel):
-    dit_models: list[str] = Field(..., description="DIT 模型文件列表（可多选，合并为一个模型）")
-    t5_model: str = Field(..., description="T5 模型文件名")
-    vae_model: str = Field(..., description="VAE 模型文件名")
-    prompt: str = Field("", description="正向提示词，描述视频内容，可包含 <lora:模型文件名:权重>")
-    negative_prompt: str = Field("", description="负向提示词，用于排除不需要的元素")
-    num_inference_steps: int = Field(15, ge=1, le=100, description="推理步数，影响生成质量和速度")
-    seed: int = Field(-1, description="随机种子，-1 表示随机")
-    height: int = Field(480, ge=256, le=1080, multiple_of=8, description="视频高度（像素）")
-    width: int = Field(832, ge=256, le=1920, multiple_of=8, description="视频宽度（像素）")
-    num_frames: int = Field(81, ge=1, description="视频总帧数")
-    cfg_scale: float = Field(5.0, ge=0.0, le=20.0, description="CFG Scale，控制提示词的遵循程度")
-    sigma_shift: float = Field(5.0, ge=0.0, description="Sigma Shift，控制扩散过程")
-    tea_cache_l1_thresh: float = Field(0.07, ge=0.0, le=1.0, description="TeaCache L1 阈值，越大越快但质量下降")
-    tea_cache_model_id: str = Field("Wan2.1-T2V-1.3B", description="TeaCache 模型 ID", example="Wan2.1-T2V-1.3B")
-    image_encoder_model: str | None = Field(None, description="Image Encoder 模型文件名（可选）")
-    fps: int = Field(15, ge=1, le=60, description="输出帧率（FPS）")
-    denoising_strength: float = Field(1.0, ge=0.0, le=1.0, description="降噪强度")
-    rand_device: str = Field("cpu", description="随机设备：cpu 或 cuda")
-    tiled: bool = Field(True, description="是否使用 Tiled 处理")
+    dit_models: list[str] = Field(..., description="DIT model file list (multiple selections possible, merged into one model)")
+    t5_model: str = Field(..., description="T5 model file name")
+    vae_model: str = Field(..., description="VAE model file name")
+    prompt: str = Field("", description="Positive prompt words, describing the video content, can contain <lora:model file name:weight>")
+    negative_prompt: str = Field("", description="Negative prompt words, used to exclude unnecessary elements")
+    num_inferrence_steps: int = Field(15, ge=1, le=100, description="Number of inferrence steps, affects generation quality and speed")
+    seed: int = Field(-1, description="Random seed, -1 means random")
+    height: int = Field(480, ge=256, le=1080, multiple_of=8, description="Video height (pixels)")
+    width: int = Field(832, ge=256, le=1920, multiple_of=8, description="Video width (pixels)")
+    num_frames: int = Field(81, ge=1, description="Total number of video frames")
+    cfg_scale: float = Field(5.0, ge=0.0, le=20.0, description="CFG Scale, controls the degree of compliance of prompt words")
+    sigma_shift: float = Field(5.0, ge=0.0, description="Sigma Shift, controls the diffusion process")
+    tea_cache_l1_thresh: float = Field(0.07, ge=0.0, le=1.0, description="TeaCache L1 threshold, the larger the faster but the lower the quality")
+    tea_cache_model_id: str = Field("Wan2.1-T2V-1.3B", description="TeaCache model ID", example="Wan2.1-T2V-1.3B")
+    image_encoder_model: str | None = Field(None, description="Image Encoder model file name (optional)")
+    fps: int = Field(15, ge=1, le=60, description="Output frame rate (FPS)")
+    denoising_strength: float = Field(1.0, ge=0.0, le=1.0, description="Noise reduction strength")
+    rand_device: str = Field("cpu", description="Random device: cpu or cuda")
+    tiled: bool = Field(True, description="Whether to use Tiled processing")
     tile_size_x: int = Field(30, ge=1, description="Tile Size X")
     tile_size_y: int = Field(52, ge=1, description="Tile Size Y")
     tile_stride_x: int = Field(15, ge=1, description="Tile Stride X")
     tile_stride_y: int = Field(26, ge=1, description="Tile Stride Y")
-    torch_dtype: str = Field("bfloat16", description="DIT/T5/VAE 数据类型：float16, bfloat16, float8_e4m3fn")
-    image_encoder_torch_dtype: str = Field("float32", description="Image Encoder 数据类型：float16, float32, bfloat16")
-    use_usp: bool = Field(False, description="是否使用 USP（Unified Sequence Parallel）")
-    enable_num_persistent: bool = Field(False, description="是否启用显存优化参数")
-    num_persistent_param_in_dit: int | None = Field(None, description="显存管理参数值，值越小显存需求越少")
+    torch_dtype: str = Field("bfloat16", description="DIT/T5/VAE data types: float16, bfloat16, float8_e4m3fn")
+    image_encoder_torch_dtype: str = Field("float32", description="Image Encoder data type: float16, float32, bfloat16")
+    use_usp: bool = Field(False, description="Whether to use USP (Unified Sequence Parallel)")
+    enable_num_persistent: bool = Field(False, description="Whether to enable video memory optimization parameters")
+    num_persistent_param_in_dit: int | None = Field(None, description="Video memory management parameter value, the smaller the value, the less video memory required")
 
 class Image2VideoRequest(BaseModel):
-    image: str = Field(..., description="首帧图片的 Base64 编码字符串")
-    dit_models: list[str] = Field(..., description="DIT 模型文件列表（可多选，合并为一个模型）")
-    t5_model: str = Field(..., description="T5 模型文件名")
-    vae_model: str = Field(..., description="VAE 模型文件名")
-    image_encoder_model: str = Field(..., description="Image Encoder 模型文件名")
-    end_image: str | None = Field(None, description="尾帧图片的 Base64 编码字符串（可选）")
-    prompt: str = Field("", description="正向提示词，描述视频内容，可包含 <lora:模型文件名:权重>")
-    negative_prompt: str = Field("", description="负向提示词，用于排除不需要的元素")
-    num_inference_steps: int = Field(15, ge=1, le=100, description="推理步数，影响生成质量和速度")
-    seed: int = Field(-1, description="随机种子，-1 表示随机")
-    height: int = Field(480, ge=256, le=1080, multiple_of=8, description="视频高度（像素）")
-    width: int = Field(832, ge=256, le=1920, multiple_of=8, description="视频宽度（像素）")
-    num_frames: int = Field(81, ge=1, description="视频总帧数")
-    cfg_scale: float = Field(5.0, ge=0.0, le=20.0, description="CFG Scale，控制提示词的遵循程度")
-    sigma_shift: float = Field(5.0, ge=0.0, description="Sigma Shift，控制扩散过程")
-    tea_cache_l1_thresh: float = Field(0.19, ge=0.0, le=1.0, description="TeaCache L1 阈值，越大越快但质量下降")
-    tea_cache_model_id: str = Field("Wan2.1-I2V-14B-480P", description="TeaCache 模型 ID", example="Wan2.1-I2V-14B-480P")
-    fps: int = Field(15, ge=1, le=60, description="输出帧率（FPS）")
-    denoising_strength: float = Field(1.0, ge=0.0, le=1.0, description="降噪强度")
-    rand_device: str = Field("cpu", description="随机设备：cpu 或 cuda")
-    tiled: bool = Field(True, description="是否使用 Tiled 处理")
+    image: str = Field(..., description="Base64 encoded string of the first frame")
+    dit_models: list[str] = Field(..., description="DIT model file list (multiple selections possible, merged into one model)")
+    t5_model: str = Field(..., description="T5 model file name")
+    vae_model: str = Field(..., description="VAE model file name")
+    image_encoder_model: str = Field(..., description="Image Encoder model file name")
+    end_image: str | None = Field(None, description="Base64 encoded string of the last frame image (optional)")
+    prompt: str = Field("", description="Positive prompt words, describing the video content, can contain <lora:model file name:weight>")
+    negative_prompt: str = Field("", description="Negative prompt words, used to exclude unnecessary elements")
+    num_inferrence_steps: int = Field(15, ge=1, le=100, description="Number of inferrence steps, affects generation quality and speed")
+    seed: int = Field(-1, description="Random seed, -1 means random")
+    height: int = Field(480, ge=256, le=1080, multiple_of=8, description="Video height (pixels)")
+    width: int = Field(832, ge=256, le=1920, multiple_of=8, description="Video width (pixels)")
+    num_frames: int = Field(81, ge=1, description="Total number of video frames")
+    cfg_scale: float = Field(5.0, ge=0.0, le=20.0, description="CFG Scale, controls the degree of compliance of prompt words")
+    sigma_shift: float = Field(5.0, ge=0.0, description="Sigma Shift, controls the diffusion process")
+    tea_cache_l1_thresh: float = Field(0.19, ge=0.0, le=1.0, description="TeaCache L1 threshold, the larger the faster but the lower the quality")
+    tea_cache_model_id: str = Field("Wan2.1-I2V-14B-480P", description="TeaCache model ID", example="Wan2.1-I2V-14B-480P")
+    fps: int = Field(15, ge=1, le=60, description="Output frame rate (FPS)")
+    denoising_strength: float = Field(1.0, ge=0.0, le=1.0, description="Noise reduction strength")
+    rand_device: str = Field("cpu", description="Random device: cpu or cuda")
+    tiled: bool = Field(True, description="Whether to use Tiled processing")
     tile_size_x: int = Field(30, ge=1, description="Tile Size X")
     tile_size_y: int = Field(52, ge=1, description="Tile Size Y")
     tile_stride_x: int = Field(15, ge=1, description="Tile Stride X")
     tile_stride_y: int = Field(26, ge=1, description="Tile Stride Y")
-    torch_dtype: str = Field("bfloat16", description="DIT/T5/VAE 数据类型：float16, bfloat16, float8_e4m3fn")
-    image_encoder_torch_dtype: str = Field("float32", description="Image Encoder 数据类型：float16, float32, bfloat16")
-    use_usp: bool = Field(False, description="是否使用 USP（Unified Sequence Parallel）")
-    enable_num_persistent: bool = Field(False, description="是否启用显存优化参数")
-    num_persistent_param_in_dit: int | None = Field(None, description="显存管理参数值，值越小显存需求越少")
+    torch_dtype: str = Field("bfloat16", description="DIT/T5/VAE data types: float16, bfloat16, float8_e4m3fn")
+    image_encoder_torch_dtype: str = Field("float32", description="Image Encoder data type: float16, float32, bfloat16")
+    use_usp: bool = Field(False, description="Whether to use USP (Unified Sequence Parallel)")
+    enable_num_persistent: bool = Field(False, description="Whether to enable video memory optimization parameters")
+    num_persistent_param_in_dit: int | None = Field(None, description="Video memory management parameter value, the smaller the value, the less video memory required")
 
 class Video2VideoRequest(BaseModel):
-    video: str = Field(..., description="初始视频的 Base64 编码字符串")
-    dit_models: list[str] = Field(..., description="DIT 模型文件列表（可多选，合并为一个模型）")
-    t5_model: str = Field(..., description="T5 模型文件名")
-    vae_model: str = Field(..., description="VAE 模型文件名")
-    prompt: str = Field("", description="正向提示词，描述视频内容，可包含 <lora:模型文件名:权重>")
-    negative_prompt: str = Field("", description="负向提示词，用于排除不需要的元素")
-    control_video: str | None = Field(None, description="控制视频的 Base64 编码字符串（可选）")
-    num_inference_steps: int = Field(15, ge=1, le=100, description="推理步数，影响生成质量和速度")
-    seed: int = Field(-1, description="随机种子，-1 表示随机")
-    height: int = Field(480, ge=256, le=1080, multiple_of=8, description="视频高度（像素）")
-    width: int = Field(832, ge=256, le=1920, multiple_of=8, description="视频宽度（像素）")
-    num_frames: int = Field(81, ge=1, description="视频总帧数")
-    cfg_scale: float = Field(5.0, ge=0.0, le=20.0, description="CFG Scale，控制提示词的遵循程度")
-    sigma_shift: float = Field(5.0, ge=0.0, description="Sigma Shift，控制扩散过程")
-    image_encoder_model: str | None = Field(None, description="Image Encoder 模型文件名（可选）")
-    fps: int = Field(15, ge=1, le=60, description="输出帧率（FPS）")
-    denoising_strength: float = Field(0.7, ge=0.0, le=1.0, description="降噪强度")
-    rand_device: str = Field("cpu", description="随机设备：cpu 或 cuda")
-    tiled: bool = Field(True, description="是否使用 Tiled 处理")
+    video: str = Field(..., description="Base64 encoded string of the original video")
+    dit_models: list[str] = Field(..., description="DIT model file list (multiple selections possible, merged into one model)")
+    t5_model: str = Field(..., description="T5 model file name")
+    vae_model: str = Field(..., description="VAE model file name")
+    prompt: str = Field("", description="Positive prompt words, describing the video content, can contain <lora:model file name:weight>")
+    negative_prompt: str = Field("", description="Negative prompt words, used to exclude unnecessary elements")
+    control_video: str | None = Field(None, description="Base64 encoded string of control video (optional)")
+    num_inferrence_steps: int = Field(15, ge=1, le=100, description="Number of inferrence steps, affects generation quality and speed")
+    seed: int = Field(-1, description="Random seed, -1 means random")
+    height: int = Field(480, ge=256, le=1080, multiple_of=8, description="Video height (pixels)")
+    width: int = Field(832, ge=256, le=1920, multiple_of=8, description="Video width (pixels)")
+    num_frames: int = Field(81, ge=1, description="Total number of video frames")
+    cfg_scale: float = Field(5.0, ge=0.0, le=20.0, description="CFG Scale, controls the degree of compliance of prompt words")
+    sigma_shift: float = Field(5.0, ge=0.0, description="Sigma Shift, controls the diffusion process")
+    image_encoder_model: str | None = Field(None, description="Image Encoder model file name (optional)")
+    fps: int = Field(15, ge=1, le=60, description="Output frame rate (FPS)")
+    denoising_strength: float = Field(0.7, ge=0.0, le=1.0, description="Noise reduction strength")
+    rand_device: str = Field("cpu", description="Random device: cpu or cuda")
+    tiled: bool = Field(True, description="Whether to use Tiled processing")
     tile_size_x: int = Field(30, ge=1, description="Tile Size X")
     tile_size_y: int = Field(52, ge=1, description="Tile Size Y")
     tile_stride_x: int = Field(15, ge=1, description="Tile Stride X")
     tile_stride_y: int = Field(26, ge=1, description="Tile Stride Y")
-    torch_dtype: str = Field("bfloat16", description="DIT/T5/VAE 数据类型：float16, bfloat16, float8_e4m3fn")
-    image_encoder_torch_dtype: str = Field("float32", description="Image Encoder 数据类型：float16, float32, bfloat16")
-    use_usp: bool = Field(False, description="是否使用 USP（Unified Sequence Parallel）")
-    enable_num_persistent: bool = Field(False, description="是否启用显存优化参数")
-    num_persistent_param_in_dit: int | None = Field(None, description="显存管理参数值，值越小显存需求越少")
+    torch_dtype: str = Field("bfloat16", description="DIT/T5/VAE data types: float16, bfloat16, float8_e4m3fn")
+    image_encoder_torch_dtype: str = Field("float32", description="Image Encoder data type: float16, float32, bfloat16")
+    use_usp: bool = Field(False, description="Whether to use USP (Unified Sequence Parallel)")
+    enable_num_persistent: bool = Field(False, description="Whether to enable video memory optimization parameters")
+    num_persistent_param_in_dit: int | None = Field(None, description="Video memory management parameter value, the smaller the value, the less video memory required")
 
 class VideoResponse(BaseModel):
-    video: str = Field(..., description="生成的视频，Base64 编码的 MP4 文件")
-    info: str = Field(..., description="生成信息，包括硬件信息、耗时、分辨率等")
+    video: str = Field(..., description="Generated video, Base64-encoded MP4 file")
+    info: str = Field(..., description="Generation information, including hardware information, time consumption, resolution, etc.")
 
 class ModelsResponse(BaseModel):
-    dit_models: list[str] = Field(..., description="可用 DIT 模型文件列表")
-    t5_models: list[str] = Field(..., description="可用 T5 模型文件列表")
-    vae_models: list[str] = Field(..., description="可用 VAE 模型文件列表")
-    image_encoder_models: list[str] = Field(..., description="可用 Image Encoder 模型文件列表")
-    lora_models: list[str] = Field(..., description="可用 LoRA 模型文件列表")
+    dit_models: list[str] = Field(..., description="Available DIT model file list")
+    t5_models: list[str] = Field(..., description="A list of available T5 model files")
+    vae_models: list[str] = Field(..., description="Available VAE model file list")
+    image_encoder_models: list[str] = Field(..., description="Available Image Encoder model file list")
+    lora_models: list[str] = Field(..., description="Available LoRA model file list")
 
 class Api:
     def __init__(self, app: FastAPI, queue_lock: Lock = None, prefix: str = "/wanvideo/v1"):
         self.app = app
-        self.queue_lock = queue_lock or Lock()  # 使用传入的 queue_lock 或默认 Lock
+        self.queue_lock = queue_lock or Lock() # Use the passed in queue_lock or default Lock
         self.prefix = prefix
         self.credentials = {}
 
-        # 加载 WebUI 的 API 认证配置（仅 WebUI 环境）
+        # Load the WebUI API authentication configuration (WebUI environment only)
         if IN_WEBUI and shared.cmd_opts.api_auth:
             for auth in shared.cmd_opts.api_auth.split(","):
                 user, password = auth.split(":")
                 self.credentials[user] = password
 
-        # 注册 API 路由
+        # Registering API Routes
         self.add_api_route(
             "t2v",
             self.endpoint_text2video,
@@ -192,16 +192,19 @@ class Api:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)
         return self.app.add_api_route(path, endpoint, **kwargs)
 
-    def decode_base64_image(self, base64_str: str) -> Image.Image:
-        """将 Base64 图片解码为 PIL.Image 对象"""
+    def decode_base64_image(self, base64_str: str) -> str:
+        """Decode the Base64 image and save it as a temporary file, returning the file path"""
         try:
             img_data = base64.b64decode(base64_str)
-            return Image.open(BytesIO(img_data)).convert("RGB")
+            img = Image.open(BytesIO(img_data)).convert("RGB")
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                img.save(tmp.name)
+                return tmp.name
         except Exception as e:
             raise HTTPException(400, f"Invalid image Base64 data: {str(e)}")
 
     def decode_base64_video(self, base64_str: str) -> str:
-        """将 Base64 视频解码并保存为临时文件，返回文件路径"""
+        """Decode the Base64 video and save it as a temporary file, returning the file path"""
         try:
             video_data = base64.b64decode(base64_str)
             with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
@@ -211,7 +214,7 @@ class Api:
             raise HTTPException(400, f"Invalid video Base64 data: {str(e)}")
 
     def encode_video_to_base64(self, video_path: str) -> str:
-        """将视频文件编码为 Base64 字符串"""
+        """Encode the video file into a Base64 string"""
         try:
             with open(video_path, "rb") as f:
                 video_data = f.read()
@@ -224,7 +227,7 @@ class Api:
             output_path, info = generate_t2v(
                 prompt=req.prompt,
                 negative_prompt=req.negative_prompt,
-                num_inference_steps=req.num_inference_steps,
+                num_inferrence_steps=req.num_inferrence_steps,
                 seed=req.seed,
                 height=req.height,
                 width=req.width,
@@ -254,19 +257,19 @@ class Api:
             if output_path is None:
                 raise HTTPException(500, f"Video generation failed: {info}")
             video_base64 = self.encode_video_to_base64(output_path)
-            os.remove(output_path)  # 清理临时文件
+            os.remove(output_path) # Clean up temporary files
             return VideoResponse(video=video_base64, info=info)
 
     def endpoint_image2video(self, req: Image2VideoRequest):
-        image_pil = self.decode_base64_image(req.image)
-        end_image_pil = self.decode_base64_image(req.end_image) if req.end_image else None
+        image_path = self.decode_base64_image(req.image)
+        end_image_path = self.decode_base64_image(req.end_image) if req.end_image else None
         with self.queue_lock:
             output_path, info = generate_i2v(
-                image=image_pil,
-                end_image=end_image_pil,
+                image=image_path,
+                end_image=end_image_path,
                 prompt=req.prompt,
                 negative_prompt=req.negative_prompt,
-                num_inference_steps=req.num_inference_steps,
+                num_inferrence_steps=req.num_inferrence_steps,
                 seed=req.seed,
                 height=req.height,
                 width=req.width,
@@ -293,6 +296,9 @@ class Api:
                 enable_num_persistent=req.enable_num_persistent,
                 num_persistent_param_in_dit=req.num_persistent_param_in_dit
             )
+            os.remove(image_path)
+            if end_image_path:
+                os.remove(end_image_path)
             if output_path is None:
                 raise HTTPException(500, f"Video generation failed: {info}")
             video_base64 = self.encode_video_to_base64(output_path)
@@ -308,7 +314,7 @@ class Api:
                 control_video=control_video_path,
                 prompt=req.prompt,
                 negative_prompt=req.negative_prompt,
-                num_inference_steps=req.num_inference_steps,
+                num_inferrence_steps=req.num_inferrence_steps,
                 seed=req.seed,
                 height=req.height,
                 width=req.width,
@@ -353,6 +359,6 @@ class Api:
         )
 
 def on_app_started(_: None, app: FastAPI):
-    # 在 WebUI 环境下使用 webui_queue_lock
+    # Using webui_queue_lock in WebUI environment
     queue_lock = webui_queue_lock if IN_WEBUI else Lock()
     Api(app, queue_lock, "/wanvideo/v1")
