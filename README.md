@@ -1,5 +1,5 @@
 # Below is a direct translation of the Wan2.1 README.md by Spawner1145. 
-#           All credits go to him and his outstanding work.
+# All credits go to him and his outstanding work.
 
 -----------------------------------------------------------
 
