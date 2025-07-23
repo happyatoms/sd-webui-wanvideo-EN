@@ -1,103 +1,106 @@
+## Below is a direct translation of the Wan2.1 readme.md by Spawner1145. 
+## All credits go to him and his outstanding work.
+-----------------------------------------------------------
 # sd-webui-wanvideo
 
-太菜了，看不懂kj nodes，所以直接用diffusers了(
+I'm too new to understand kj nodes, so I just use diffusers (
 
-本项目已支持api
+This project already supports api
 
 ---
 
-## 注意事项
+## Notes
 
-1. **models文件夹位置**
+1. **models folder location**
 
-   * 如果你使用的是 `sd-webui` 插件，请将 根目录内的 `models` 文件夹剪切到 `webui` 根目录下，并与原有的 `models` 文件夹合并。
-   * 如果你是单独运行项目，则模型文件夹的路径结构如下：
+   * If you are using the `sd-webui` plugin, please cut the `models` folder in the root directory to the `webui` root directory and merge it with the original `models` folder.
+   * If you run the project separately, the path structure of the model folder is as follows:
 
      ```
      sd-webui-wanvideo/
      ├── install.py
      ├── requirements.txt
      ├── scripts/
-     │   └── app.py  # 主脚本文件
+     │ └── app.py # Main script file
      ├── backend/
-     │   ├── api.py
-     │   ├── inferrence.py
-     │   └── ui.py
+     │ ├── api.py
+     │ ├── inferrence.py
+     │ └── ui.py
      ├── models/wan2.1/
-     │   ├── dit/  # 放底模的
-     │   │      ├── xxx001.safetensors
-     │   │      ├── xxx002.safetensors
-     │   │      └── ......
-     │   ├── t5/  # T5 模型
-     │   ├── vae/  # VAE 模型
-     │   ├── lora/  # LoRA 模型
-     │   └── image_encoder/  # CLIP 模型
-     ├── api_examples/  # api调用示例文件
-     │   ├── t2v.py
-     │   ├── i2v.py
-     │   └── v2v.py
+     │ ├── dit/ # for the bottom mold
+     │ │ ├── xxx001.safetensors
+     │ │ ├── xxx002.safetensors
+     │ │ └── ......
+     │ ├── t5/ # T5 model
+     │ ├── vae/ # VAE model
+     │ ├── lora/ # LoRA model
+     │ └── image_encoder/ # CLIP model
+     ├── api_examples/ #api call example file
+     │ ├── t2v.py
+     │ ├── i2v.py
+     │ └── v2v.py
      ├── license
      └── README.md
      ```
-2. **启动方式**
+2. **Startup method**
 
-   * **作为 `sd-webui` 插件** ：将项目放入 `extensions` 文件夹中即可。
-   * **单独运行** ：
-     在项目根目录下运行以下命令：
+   * **As an `sd-webui` plugin**: Put the project into the `extensions` folder.
+   * **Running standalone**:
+     Run the following command in the project root directory:
 
      ```
      python -m scripts.app
      ```
 
-   **注意** ：
+   **Notice** :
 
-   * 单独运行时，需先安装依赖。请确保已安装 `torch` 和 `torchvision`，然后运行以下命令安装其他依赖：
+   * When running alone, you need to install dependencies first. Please make sure that `torch` and `torchvision` are installed, and then run the following command to install other dependencies:
 
      ```
      pip install -r requirements.txt
      ```
-   * **不要运行 `install.py`** ，它仅用于插件模式。
+   * **DO NOT run `install.py`**, it is only used in plugin mode.
 
 ---
 
-## 模型下载与配置
+## Model download and configuration
 
-### 下载地址
+### Download address
 
-* [ModelScope](https://www.modelscope.cn/) 或 [HuggingFace](https://huggingface.co/)
-  （以通义万相 2.1 文生视频 1.3B 模型为例）
+* [ModelScope](https://www.modelscope.cn/) or [HuggingFace](https://huggingface.co/)
+  (Take Tongyi Wanxiang 2.1 Wensheng Video 1.3B model as an example)
 
-#### 文生视频模型 (Wan2.1-T2V-1.3B)
+#### Vincent video model (Wan2.1-T2V-1.3B)
 
-* **dit 模型**
-  下载 [diffusion_pytorch_model.safetensors](https://www.modelscope.cn/models/Wan-AI/Wan2.1-T2V-1.3B/file/view/master?fileName=diffusion_pytorch_model.safetensors&status=2)，放入 `models/wan2.1/dit/` 文件夹
-* **t5 模型**
-  下载 [models_t5_umt5-xxl-enc-bf16.pth](https://www.modelscope.cn/models/Wan-AI/Wan2.1-T2V-1.3B/file/view/master?fileName=models_t5_umt5-xxl-enc-bf16.pth&status=2)，放入 `models/wan2.1/t5/` 文件夹
-* **vae 模型**
-  下载 [Wan2.1_VAE.pth](https://www.modelscope.cn/models/Wan-AI/Wan2.1-T2V-1.3B/file/view/master?fileName=Wan2.1_VAE.pth&status=2)，放入 `models/wan2.1/vae/` 文件夹
+* **dit model**
+  Download [diffusion_pytorch_model.safetensors](https://www.modelscope.cn/models/Wan-AI/Wan2.1-T2V-1.3B/file/view/master?fileName=diffusion_pytorch_model.safetensors&status=2) and put it in the `models/wan2.1/dit/` folder
+* **t5 model**
+  Download [models_t5_umt5-xxl-enc-bf16.pth](https://www.modelscope.cn/models/Wan-AI/Wan2.1-T2V-1.3B/file/view/master?fileName=models_t5_umt5-xxl-enc-bf16.pth&status=2) and put it into the `models/wan2.1/t5/` folder
+* **vae model**
+  Download [Wan2.1_VAE.pth](https://www.modelscope.cn/models/Wan-AI/Wan2.1-T2V-1.3B/file/view/master?fileName=Wan2.1_VAE.pth&status=2) and put it in the `models/wan2.1/vae/` folder
 
-#### 图生视频模型 (Wan2.1-I2V-14B-480P)
+#### Image video model (Wan2.1-I2V-14B-480P)
 
-* **image_encoder 模型**
-  下载 [models_clip_open-clip-xlm-roberta-large-vit-huge-14.pth](https://www.modelscope.cn/models/Wan-AI/Wan2.1-I2V-14B-480P/file/view/master?fileName=models_clip_open-clip-xlm-roberta-large-vit-huge-14.pth&status=2)，放入 `models/wan2.1/image_encoder/` 文件夹
+* **image_encoder model**
+  Download [models_clip_open-clip-xlm-roberta-large-vit-huge-14.pth](https://www.modelscope.cn/models/Wan-AI/Wan2.1-I2V-14B-480P/file/view/master?fileName=models_clip_open-clip-xlm-roberta-large-vit-huge-14.pth&status=2) and put it in the `models/wan2.1/image_encoder/` folder
 
-#### 分片模型
+#### Sharding Model
 
-* 如果遇到分片模型（如 `diffusion_pytorch_model.safetensors` 带有 `00001 of 00001` 的后缀），需要下载所有分片文件，并将它们全部放入 `dit` 文件夹
-* 同时下载对应的索引文件（如 `diffusion_pytorch_model.safetensors.index.json`），也放入 `dit` 文件夹
-* 使用时，界面会自动加载所有相关分片
+* If you encounter a sharded model (such as `diffusion_pytorch_model.safetensors` with a suffix of `00001 of 00001`), you need to download all sharded files and put them all into the `dit` folder
+* At the same time, download the corresponding index file (such as `diffusion_pytorch_model.safetensors.index.json`) and put it in the `dit` folder
+* When used, the interface will automatically load all related shards
 
 ---
 
-## 控制模型与 Inpaint 模型
+## Control Model and Inpaint Model
 
-* **控制模型**
+* **Control Model**
 
-  HuggingFace 地址：[alibaba-pai/Wan2.1-Fun-1.3B-Control](https://huggingface.co/alibaba-pai/Wan2.1-Fun-1.3B-Control)
+  HuggingFace address: [alibaba-pai/Wan2.1-Fun-1.3B-Control](https://huggingface.co/alibaba-pai/Wan2.1-Fun-1.3B-Control)
 
-  ModelScope 地址：[pai/Wan2.1-Fun-1.3B-Control](https://www.modelscope.cn/models/pai/Wan2.1-Fun-1.3B-Control)
-* **Inpaint 模型**
+  ModelScope address: [pai/Wan2.1-Fun-1.3B-Control](https://www.modelscope.cn/models/pai/Wan2.1-Fun-1.3B-Control)
+* **Inpaint Model**
 
-  HuggingFace 地址：[alibaba-pai/Wan2.1-Fun-1.3B-InP](https://huggingface.co/alibaba-pai/Wan2.1-Fun-1.3B-InP)
+  HuggingFace address: [alibaba-pai/Wan2.1-Fun-1.3B-InP](https://huggingface.co/alibaba-pai/Wan2.1-Fun-1.3B-InP)
 
-  ModelScope 地址：[pai/Wan2.1-Fun-1.3B-InP](https://www.modelscope.cn/models/pai/Wan2.1-Fun-1.3B-InP)
+  ModelScope address: [pai/Wan2.1-Fun-1.3B-InP](https://www.modelscope.cn/models/pai/Wan2.1-Fun-1.3B-InP)
