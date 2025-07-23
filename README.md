@@ -1,9 +1,10 @@
-# Below is a direct translation of the Wan2.1 README.md by Spawner1145. 
-# All credits go to him and his outstanding work.
-
+# Below is a direct translation of the Wan2.1 README.md by Spawner1145. All credits go to him and his outstanding work.
+---
 Nothing in the code has been changes, apart from English translations of all comments and UI elements, along with some minor tweaks to the Chinese->English translation.
 
 Enjoy!
+
+![alt text](https://github.com/happyatoms/sd-webui-wanvideo-EN/blob/main/preview.png "UI Preview")
 
 -----------------------------------------------------------
 
