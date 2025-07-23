@@ -166,8 +166,8 @@ def create_wan_video_tab():
             with gr.Tab("图片生成视频"):
                 with gr.Row():
                     with gr.Column():
-                        image_input = gr.Image(label="上传首帧", type="filepath")
-                        end_image_input = gr.Image(label="上传尾帧 (可选)", type="filepath")  # 新增尾帧输入
+                        image_input = gr.Image(label="上传首帧", type="pil")
+                        end_image_input = gr.Image(label="上传尾帧 (可选)", type="pil")  # 新增尾帧输入
                         adapt_resolution_btn = gr.Button("自适应图片分辨率")
                         prompt_i2v = gr.Textbox(label="正向提示词", lines=3, placeholder="输入描述视频内容的提示词，可包含 <lora:模型文件名:权重>")
                         negative_prompt_i2v = gr.Textbox(

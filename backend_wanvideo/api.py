@@ -192,14 +192,11 @@ class Api:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)
         return self.app.add_api_route(path, endpoint, **kwargs)
 
-    def decode_base64_image(self, base64_str: str) -> str:
-        """将 Base64 图片解码并保存为临时文件，返回文件路径"""
+    def decode_base64_image(self, base64_str: str) -> Image.Image:
+        """将 Base64 图片解码为 PIL.Image 对象"""
         try:
             img_data = base64.b64decode(base64_str)
-            img = Image.open(BytesIO(img_data)).convert("RGB")
-            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-                img.save(tmp.name)
-                return tmp.name
+            return Image.open(BytesIO(img_data)).convert("RGB")
         except Exception as e:
             raise HTTPException(400, f"Invalid image Base64 data: {str(e)}")
 
@@ -261,12 +258,12 @@ class Api:
             return VideoResponse(video=video_base64, info=info)
 
     def endpoint_image2video(self, req: Image2VideoRequest):
-        image_path = self.decode_base64_image(req.image)
-        end_image_path = self.decode_base64_image(req.end_image) if req.end_image else None
+        image_pil = self.decode_base64_image(req.image)
+        end_image_pil = self.decode_base64_image(req.end_image) if req.end_image else None
         with self.queue_lock:
             output_path, info = generate_i2v(
-                image=image_path,
-                end_image=end_image_path,
+                image=image_pil,
+                end_image=end_image_pil,
                 prompt=req.prompt,
                 negative_prompt=req.negative_prompt,
                 num_inference_steps=req.num_inference_steps,
@@ -296,9 +293,6 @@ class Api:
                 enable_num_persistent=req.enable_num_persistent,
                 num_persistent_param_in_dit=req.num_persistent_param_in_dit
             )
-            os.remove(image_path)
-            if end_image_path:
-                os.remove(end_image_path)
             if output_path is None:
                 raise HTTPException(500, f"Video generation failed: {info}")
             video_base64 = self.encode_video_to_base64(output_path)

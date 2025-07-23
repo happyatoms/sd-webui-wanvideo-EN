@@ -177,8 +177,8 @@ def adaptive_resolution(image):
     if image is None:
         return 512, 512
     try:
-        img = Image.open(image)
-        width, height = img.size
+        # image is now a PIL Image object
+        width, height = image.size
         return width, height
     except Exception as e:
         return 512, 512
@@ -303,9 +303,9 @@ def generate_i2v(image, end_image, prompt, negative_prompt, num_inference_steps,
     try:
         if image is None:
             raise ValueError("请上传首帧")
-        img = Image.open(image).convert("RGB")
+        img = image.convert("RGB")
         # 如果提供了尾帧，则加载它
-        end_img = Image.open(end_image).convert("RGB") if end_image else None
+        end_img = end_image.convert("RGB") if end_image else None
 
         # 处理随机种子
         actual_seed = int(seed)
